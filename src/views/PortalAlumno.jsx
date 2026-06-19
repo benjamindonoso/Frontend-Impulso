@@ -98,8 +98,19 @@ export default function PortalAlumno() {
   };
 
   const handleSeleccionarIntegrante = (integrante) => {
-    setIntegranteActivo(integrante);
-    buscarRutinas(integrante.id);
+    // Si la base de datos envía el cliente anidado bajo 'cliente', lo sacamos. 
+    // Si no, asumimos que el integrante ya es el cliente real.
+    const clienteReal = integrante.cliente ? integrante.cliente : integrante;
+    
+    setIntegranteActivo(clienteReal);
+    
+    // Evitamos enviar peticiones "undefined" al servidor
+    if (clienteReal && clienteReal.id) {
+      buscarRutinas(clienteReal.id);
+    } else {
+      console.error("No se encontró un ID válido para este cliente:", clienteReal);
+    }
+    
     setPaso('rutina');
   };
 
