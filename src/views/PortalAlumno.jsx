@@ -97,11 +97,20 @@ export default function PortalAlumno() {
     }
   };
 
-  // VERSIÓN CORREGIDA: Extrae el cliente si viene anidado
+  // Función robusta para extraer el nombre real (por si Prisma usa mayúsculas u otra key)
+  const obtenerNombreReal = (obj) => {
+    if (!obj) return '';
+    return obj.nombre || obj.nombres || obj.Cliente?.nombre || obj.cliente?.nombre || '';
+  };
+
   const handleSeleccionarIntegrante = (integrante) => {
-    const clienteReal = integrante.cliente ? integrante.cliente : integrante;
+    const clienteReal = integrante.cliente || integrante.Cliente || integrante;
     
-    setIntegranteActivo(clienteReal);
+    // Le inyectamos el nombre asegurado al objeto activo para que la cabecera lo lea bien
+    const nombreSeguro = obtenerNombreReal(integrante);
+    const integranteFormateado = { ...clienteReal, nombre: nombreSeguro };
+
+    setIntegranteActivo(integranteFormateado);
     
     if (clienteReal && clienteReal.id) {
       buscarRutinas(clienteReal.id);
@@ -252,14 +261,13 @@ export default function PortalAlumno() {
           </div>
         )}
 
-        {/* VERSIÓN CORREGIDA: Renderizado de familia extrayendo clienteReal */}
         {paso === 'familia' && seleccionado && (
           <div className="animate-fade-in w-full">
             <h2 className="text-xl font-bold text-slate-800 mb-2 text-center">{seleccionado.nombre}</h2>
             <p className="text-sm text-slate-500 mb-6 text-center">¿Quién va a entrenar hoy?</p>
             <div className="space-y-3">
               {seleccionado.integrantes && seleccionado.integrantes.map((integrante, index) => {
-                const clienteReal = integrante.cliente ? integrante.cliente : integrante;
+                const nombreMostrar = obtenerNombreReal(integrante) || `Familiar ${index + 1}`;
                 
                 return (
                   <button 
@@ -267,7 +275,7 @@ export default function PortalAlumno() {
                     onClick={() => handleSeleccionarIntegrante(integrante)} 
                     className="w-full bg-white border border-slate-200 rounded-xl p-4 font-bold text-slate-700 hover:border-emerald-500 hover:text-emerald-700 transition-all shadow-sm"
                   >
-                    {clienteReal.nombre || 'Nombre no disponible'}
+                    {nombreMostrar}
                   </button>
                 );
               })}
@@ -275,14 +283,12 @@ export default function PortalAlumno() {
           </div>
         )}
 
-        {/* VERSIÓN CORREGIDA: Se asegura de mantener el wrapper <div> principal */}
         {paso === 'rutina' && (
           <div className="animate-fade-in w-full pb-8"> 
             
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-12 h-12 bg-emerald-500 text-white rounded-full flex items-center justify-center font-bold text-xl shadow-md">
-                {/* Protegido con validación */}
-                {integranteActivo?.nombre ? integranteActivo.nombre.charAt(0) : '?'}
+              <div className="w-12 h-12 bg-emerald-500 text-white rounded-full flex items-center justify-center font-bold text-xl shadow-md uppercase">
+                {integranteActivo?.nombre ? integranteActivo.nombre.charAt(0) : 'U'}
               </div>
               <div>
                 <h2 className="text-xl font-bold text-slate-900">
