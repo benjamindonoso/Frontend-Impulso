@@ -119,6 +119,8 @@ export default function PortalAlumno() {
     item.nombre.toLowerCase().includes(busqueda.toLowerCase())
   );
 
+  console.log("Datos del seleccionado:", seleccionado);
+
   return (
     <div className="min-h-screen bg-[#F8FAFC] font-sans flex flex-col relative">
       
