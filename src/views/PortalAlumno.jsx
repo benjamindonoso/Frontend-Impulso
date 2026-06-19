@@ -261,11 +261,20 @@ export default function PortalAlumno() {
             <h2 className="text-xl font-bold text-slate-800 mb-2 text-center">{seleccionado.nombre}</h2>
             <p className="text-sm text-slate-500 mb-6 text-center">¿Quién va a entrenar hoy?</p>
             <div className="space-y-3">
-              {seleccionado.integrantes && seleccionado.integrantes.map((integrante) => (
-                <button key={integrante.id} onClick={() => handleSeleccionarIntegrante(integrante)} className="w-full bg-white border border-slate-200 rounded-xl p-4 font-bold text-slate-700 hover:border-emerald-500 hover:text-emerald-700 transition-all shadow-sm">
-                  {integrante.nombre}
-                </button>
-              ))}
+              {seleccionado.integrantes && seleccionado.integrantes.map((integrante, index) => {
+                // Extraemos el cliente real para mostrar su nombre
+                const clienteReal = integrante.cliente ? integrante.cliente : integrante;
+                
+                return (
+                  <button 
+                    key={integrante.id || index} 
+                    onClick={() => handleSeleccionarIntegrante(integrante)} 
+                    className="w-full bg-white border border-slate-200 rounded-xl p-4 font-bold text-slate-700 hover:border-emerald-500 hover:text-emerald-700 transition-all shadow-sm"
+                  >
+                    {clienteReal.nombre || 'Nombre no disponible'}
+                  </button>
+                );
+              })}
             </div>
           </div>
         )}
@@ -274,12 +283,15 @@ export default function PortalAlumno() {
           <div className="animate-fade-in w-full pb-8">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-12 h-12 bg-emerald-500 text-white rounded-full flex items-center justify-center font-bold text-xl shadow-md">
-                {integranteActivo?.nombre.charAt(0)}
+                {integranteActivo?.nombre ? integranteActivo.nombre.charAt(0) : '?'}
               </div>
               <div>
-                <h2 className="text-xl font-bold text-slate-900">Hola, {integranteActivo?.nombre.split(' ')[0]}</h2>
+                <h2 className="text-xl font-bold text-slate-900">
+                  Hola, {integranteActivo?.nombre ? integranteActivo.nombre.split(' ')[0] : 'Alumno'}
+                </h2>
                 <p className="text-sm text-emerald-600 font-bold uppercase tracking-wider">Tu entrenamiento de hoy</p>
               </div>
+            </div>
             </div>
 
             {cargandoRutinas ? (
