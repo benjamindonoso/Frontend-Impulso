@@ -97,14 +97,12 @@ export default function PortalAlumno() {
     }
   };
 
+  // VERSIÓN CORREGIDA: Extrae el cliente si viene anidado
   const handleSeleccionarIntegrante = (integrante) => {
-    // Si la base de datos envía el cliente anidado bajo 'cliente', lo sacamos. 
-    // Si no, asumimos que el integrante ya es el cliente real.
     const clienteReal = integrante.cliente ? integrante.cliente : integrante;
     
     setIntegranteActivo(clienteReal);
     
-    // Evitamos enviar peticiones "undefined" al servidor
     if (clienteReal && clienteReal.id) {
       buscarRutinas(clienteReal.id);
     } else {
@@ -129,8 +127,6 @@ export default function PortalAlumno() {
   const listaFiltrada = (tipoIngreso === 'familia' ? familias : individuos).filter(item =>
     item.nombre.toLowerCase().includes(busqueda.toLowerCase())
   );
-
-  console.log("Datos del seleccionado:", seleccionado);
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] font-sans flex flex-col relative">
@@ -256,13 +252,13 @@ export default function PortalAlumno() {
           </div>
         )}
 
+        {/* VERSIÓN CORREGIDA: Renderizado de familia extrayendo clienteReal */}
         {paso === 'familia' && seleccionado && (
           <div className="animate-fade-in w-full">
             <h2 className="text-xl font-bold text-slate-800 mb-2 text-center">{seleccionado.nombre}</h2>
             <p className="text-sm text-slate-500 mb-6 text-center">¿Quién va a entrenar hoy?</p>
             <div className="space-y-3">
               {seleccionado.integrantes && seleccionado.integrantes.map((integrante, index) => {
-                // Extraemos el cliente real para mostrar su nombre
                 const clienteReal = integrante.cliente ? integrante.cliente : integrante;
                 
                 return (
@@ -279,10 +275,13 @@ export default function PortalAlumno() {
           </div>
         )}
 
+        {/* VERSIÓN CORREGIDA: Se asegura de mantener el wrapper <div> principal */}
         {paso === 'rutina' && (
-          <div className="animate-fade-in w-full pb-8">
+          <div className="animate-fade-in w-full pb-8"> 
+            
             <div className="flex items-center gap-3 mb-6">
               <div className="w-12 h-12 bg-emerald-500 text-white rounded-full flex items-center justify-center font-bold text-xl shadow-md">
+                {/* Protegido con validación */}
                 {integranteActivo?.nombre ? integranteActivo.nombre.charAt(0) : '?'}
               </div>
               <div>
@@ -291,7 +290,6 @@ export default function PortalAlumno() {
                 </h2>
                 <p className="text-sm text-emerald-600 font-bold uppercase tracking-wider">Tu entrenamiento de hoy</p>
               </div>
-            </div>
             </div>
 
             {cargandoRutinas ? (
@@ -323,10 +321,9 @@ export default function PortalAlumno() {
                           <div className="flex-1">
                             <div className="flex items-center justify-between mb-1">
                               <h4 className="font-bold text-slate-800 text-lg leading-tight">{ej.ejercicio.nombre}</h4>
-                              {/* NUEVO: Botón de Información */}
                               <button 
                                 onClick={(e) => {
-                                  e.preventDefault(); // Evita que el click interactúe con el checkbox si estuvieran envueltos
+                                  e.preventDefault(); 
                                   setEjercicioSeleccionadoInfo(ej.ejercicio);
                                 }}
                                 className="w-7 h-7 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center hover:bg-emerald-100 transition-colors ml-2 flex-shrink-0"
