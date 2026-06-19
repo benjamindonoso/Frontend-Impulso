@@ -97,10 +97,18 @@ export default function PortalAlumno() {
     }
   };
 
-  // Función robusta para extraer el nombre real (por si Prisma usa mayúsculas u otra key)
+  // Función MUY robusta para extraer el nombre real venga como venga de la BD
   const obtenerNombreReal = (obj) => {
     if (!obj) return '';
-    return obj.nombre || obj.nombres || obj.Cliente?.nombre || obj.cliente?.nombre || '';
+    const nombre = obj.nombre || 
+                   obj.nombres || 
+                   obj.Cliente?.nombre || 
+                   obj.cliente?.nombre || 
+                   obj.Cliente?.nombres || 
+                   obj.cliente?.nombres ||
+                   obj.usuario?.nombre ||
+                   obj.Usuario?.nombre;
+    return nombre || '';
   };
 
   const handleSeleccionarIntegrante = (integrante) => {
@@ -267,7 +275,10 @@ export default function PortalAlumno() {
             <p className="text-sm text-slate-500 mb-6 text-center">¿Quién va a entrenar hoy?</p>
             <div className="space-y-3">
               {seleccionado.integrantes && seleccionado.integrantes.map((integrante, index) => {
-                const nombreMostrar = obtenerNombreReal(integrante) || `Familiar ${index + 1}`;
+                // Log para investigar qué está devolviendo exactamente tu Backend:
+                console.log(`Datos crudos del integrante ${index}:`, integrante);
+
+                const nombreMostrar = obtenerNombreReal(integrante) || `Familiar sin nombre (${index + 1})`;
                 
                 return (
                   <button 
