@@ -97,9 +97,13 @@ export default function PortalAlumno() {
     }
   };
 
-  // Función MUY robusta para extraer el nombre real venga como venga de la BD
+  // Función MUY robusta para extraer el nombre real (Incluso si es un texto plano)
   const obtenerNombreReal = (obj) => {
     if (!obj) return '';
+    
+    // ¡AQUÍ ESTÁ LA SOLUCIÓN MÁGICA! Si el backend mandó un simple texto, lo usamos directamente.
+    if (typeof obj === 'string') return obj;
+
     const nombre = obj.nombre || 
                    obj.nombres || 
                    obj.Cliente?.nombre || 
@@ -112,18 +116,20 @@ export default function PortalAlumno() {
   };
 
   const handleSeleccionarIntegrante = (integrante) => {
-    const clienteReal = integrante.cliente || integrante.Cliente || integrante;
+    // Si es un texto plano, lo convertimos a objeto temporal para que la app no explote
+    const clienteReal = typeof integrante === 'string' ? { nombre: integrante } : (integrante.cliente || integrante.Cliente || integrante);
     
-    // Le inyectamos el nombre asegurado al objeto activo para que la cabecera lo lea bien
     const nombreSeguro = obtenerNombreReal(integrante);
     const integranteFormateado = { ...clienteReal, nombre: nombreSeguro };
 
     setIntegranteActivo(integranteFormateado);
     
+    // Intentamos buscar rutinas SOLO si el backend nos envió un ID
     if (clienteReal && clienteReal.id) {
       buscarRutinas(clienteReal.id);
     } else {
-      console.error("No se encontró un ID válido para este cliente:", clienteReal);
+      console.error("ALERTA: Tu backend solo envió el nombre del cliente, pero NO su ID. No se pueden buscar sus rutinas.");
+      setRutinasAlumno([]); // Dejamos rutinas vacías para que el usuario no espere eternamente
     }
     
     setPaso('rutina');
@@ -275,9 +281,6 @@ export default function PortalAlumno() {
             <p className="text-sm text-slate-500 mb-6 text-center">¿Quién va a entrenar hoy?</p>
             <div className="space-y-3">
               {seleccionado.integrantes && seleccionado.integrantes.map((integrante, index) => {
-                // Log para investigar qué está devolviendo exactamente tu Backend:
-                console.log(`Datos crudos del integrante ${index}:`, integrante);
-
                 const nombreMostrar = obtenerNombreReal(integrante) || `Familiar sin nombre (${index + 1})`;
                 
                 return (
