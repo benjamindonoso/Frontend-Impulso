@@ -362,22 +362,33 @@ export default function CentroRutinas() {
                 <div key={index} className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center gap-6 group">
                   <div className="w-8 h-8 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center font-bold text-sm shrink-0">{index + 1}</div>
                   <div className="flex-1"><h4 className="font-black text-slate-800 text-base">{ej.nombre}</h4></div>
+    
                   <div className="flex gap-3">
-                    <div className="text-center">
-                      <span className="text-[10px] uppercase font-bold text-slate-400 block mb-1">Series</span>
-                      <input type="number" min="1" value={ej.series} onChange={e => actualizarEjercicioInline(index, 'series', e.target.value)} className="w-16 bg-slate-50 border border-slate-200 rounded-lg py-1.5 text-center font-bold text-slate-700 outline-none focus:border-emerald-500"/>
+                      <div className="text-center">
+                        <span className="text-[10px] uppercase font-bold text-slate-400 block mb-1">Series</span>
+                        <input type="number" min="1" value={ej.series} onChange={e => actualizarEjercicioInline(index, 'series', e.target.value)} className="w-16 bg-slate-50 border border-slate-200 rounded-lg py-1.5 text-center font-bold text-slate-700 outline-none focus:border-emerald-500"/>
                     </div>
                     <div className="text-center">
-                      <span className="text-[10px] uppercase font-bold text-slate-400 block mb-1">Reps</span>
-                      <input type="number" min="1" value={ej.repeticiones} onChange={e => actualizarEjercicioInline(index, 'repeticiones', e.target.value)} className="w-16 bg-slate-50 border border-slate-200 rounded-lg py-1.5 text-center font-bold text-slate-700 outline-none focus:border-emerald-500"/>
+                        <span className="text-[10px] uppercase font-bold text-slate-400 block mb-1">Reps</span>
+                        <input type="number" min="1" value={ej.repeticiones} onChange={e => actualizarEjercicioInline(index, 'repeticiones', e.target.value)} className="w-16 bg-slate-50 border border-slate-200 rounded-lg py-1.5 text-center font-bold text-slate-700 outline-none focus:border-emerald-500"/>
                     </div>
                     <div className="text-center">
-                      <span className="text-[10px] uppercase font-bold text-slate-400 block mb-1">Peso(kg)</span>
-                      <input type="number" min="0" value={ej.peso} onChange={e => actualizarEjercicioInline(index, 'peso', e.target.value)} className="w-16 bg-slate-50 border border-slate-200 rounded-lg py-1.5 text-center font-bold text-slate-700 outline-none focus:border-emerald-500"/>
+                        <span className="text-[10px] uppercase font-bold text-slate-400 block mb-1">Peso(kg)</span>
+                        <input type="number" min="0" value={ej.peso} onChange={e => actualizarEjercicioInline(index, 'peso', e.target.value)} className="w-16 bg-slate-50 border border-slate-200 rounded-lg py-1.5 text-center font-bold text-slate-700 outline-none focus:border-emerald-500"/>
                     </div>
                     <div className="text-center">
-                      <span className="text-[10px] uppercase font-bold text-slate-400 block mb-1">Desc(s)</span>
-                      <input type="number" min="0" step="5" value={ej.descansoSeg} onChange={e => actualizarEjercicioInline(index, 'descansoSeg', e.target.value)} className="w-16 bg-amber-50 border border-amber-200 rounded-lg py-1.5 text-center font-bold text-amber-700 outline-none focus:border-amber-500"/>
+                        <span className="text-[10px] uppercase font-bold text-slate-400 block mb-1">Desc(s)</span>
+                        <input type="number" min="0" step="5" value={ej.descansoSeg} onChange={e => actualizarEjercicioInline(index, 'descansoSeg', e.target.value)} className="w-16 bg-amber-50 border border-amber-200 rounded-lg py-1.5 text-center font-bold text-amber-700 outline-none focus:border-amber-500"/>
+                    </div>
+                    <div className="w-40 ml-2">
+                      <span className="text-[10px] uppercase font-bold text-slate-400 block mb-1">Obs.</span>
+                      <input 
+                        type="text" 
+                        placeholder="Nota..." 
+                        value={ej.observaciones || ''} 
+                        onChange={e => actualizarEjercicioInline(index, 'observaciones', e.target.value)} 
+                        className="w-full bg-slate-50 border border-slate-200 rounded-lg py-1.5 px-2 text-sm text-slate-700 outline-none focus:border-emerald-500"
+                      />
                     </div>
                   </div>
                   <button onClick={() => quitarDelLienzo(index)} className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all" title="Eliminar ejercicio">
