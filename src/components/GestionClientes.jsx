@@ -5,7 +5,7 @@ const API_URL = 'https://backend-impulso-62td.onrender.com';
 export default function GestionClientes() {
   const navigate = useNavigate();
   const [clientes, setClientes] = useState([]);
-  const [familias, setFamilias] = useState([]); // <-- NUEVO ESTADO PARA FAMILIAS
+  const [familias, setFamilias] = useState([]);
   const [guardando, setGuardando] = useState(false);
   const [cambiosPendientes, setCambiosPendientes] = useState(false);
 
@@ -14,12 +14,12 @@ export default function GestionClientes() {
   const [nuevoCliente, setNuevoCliente] = useState({
     rut: '', nombre: '', apellidoP: '', apellidoM: '', 
     codigoQr: '', telefono: '', email: '', fechaNacimiento: '', 
-    activo: true, esTitular: false, familiaId: '' // <-- AÑADIDO AQUI
+    activo: true, esTitular: false, familiaId: ''
   });
 
   useEffect(() => {
     cargarClientes();
-    cargarFamilias(); // <-- CARGAMOS LAS FAMILIAS AL INICIAR
+    cargarFamilias();
   }, []);
 
   const cargarClientes = () => {
