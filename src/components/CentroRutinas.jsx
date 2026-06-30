@@ -117,8 +117,6 @@ export default function CentroRutinas() {
 
   const actualizarEjercicioInline = (index, campo, valor) => {
     const nuevos = [...ejerciciosSeleccionados];
-    // Si el campo es 'observaciones', guardamos el valor tal cual (texto)
-    // Si es numérico, lo convertimos
     if (campo === 'observaciones') {
       nuevos[index][campo] = valor;
     } else {
@@ -154,7 +152,8 @@ export default function CentroRutinas() {
         series: ej.series,
         repeticiones: ej.repeticiones,
         peso: ej.peso,
-        descansoSeg: ej.descansoSeg
+        descansoSeg: ej.descansoSeg,
+        observaciones: ej.observaciones
       }))
     };
 
@@ -388,12 +387,7 @@ export default function CentroRutinas() {
                     </div>
                     <div className="w-40 ml-2">
                       <span className="text-[10px] uppercase font-bold text-slate-400 block mb-1">Obs.</span>
-                      <input 
-                        type="text" 
-                        placeholder="Nota..." 
-                        value={ej.observaciones || ''} 
-                        onChange={e => actualizarEjercicioInline(index, 'observaciones', e.target.value)} 
-                        className="w-full bg-slate-50 border border-slate-200 rounded-lg py-1.5 px-2 text-sm text-slate-700 outline-none focus:border-emerald-500"
+                      <input type="text" placeholder="Nota..." value={ej.observaciones || ''}  onChange={e => actualizarEjercicioInline(index, 'observaciones', e.target.value)}  className="w-full bg-slate-50 border border-slate-200 rounded-lg py-1.5 px-2 text-sm text-slate-700 outline-none focus:border-emerald-500"
                       />
                     </div>
                   </div>
