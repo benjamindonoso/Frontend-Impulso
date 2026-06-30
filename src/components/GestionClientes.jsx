@@ -205,7 +205,7 @@ export default function GestionClientes() {
                 <th className="p-4 min-w-[150px]">Nombre</th>
                 <th className="p-4 min-w-[150px]">A. Paterno</th>
                 <th className="p-4 min-w-[150px]">A. Materno</th>
-                <th className="p-4 min-w-[150px]">Familia</th> {/* NUEVA COLUMNA */}
+                <th className="p-4 min-w-[150px]">Familia</th> 
                 <th className="p-4 min-w-[150px]">Email</th>
                 <th className="p-4 min-w-[120px]">Teléfono</th>
                 <th className="p-4 min-w-[80px] text-center">Titular</th>

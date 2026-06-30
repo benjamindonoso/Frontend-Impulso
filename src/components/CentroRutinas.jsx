@@ -24,6 +24,8 @@ export default function CentroRutinas() {
   const [nuevoEjercicio, setNuevoEjercicio] = useState({ nombre: '', descripcion: '', videoUrl: '' });
   const [guardandoEjercicio, setGuardandoEjercicio] = useState(false);
 
+  const [busquedaCatalogo, setBusquedaCatalogo] = useState('');
+
   useEffect(() => {
     fetch(`${API_URL}/api/clientes`)
       .then(res => res.json())
@@ -119,7 +121,6 @@ export default function CentroRutinas() {
     setEjerciciosSeleccionados(nuevos);
   };
 
-  // 👇 NUEVO: Función para quitar un ejercicio del lienzo
   const quitarDelLienzo = (index) => {
     const nuevos = [...ejerciciosSeleccionados];
     nuevos.splice(index, 1);
@@ -213,6 +214,10 @@ export default function CentroRutinas() {
     }
   };
 
+  const catalogoFiltrado = catalogo.filter(ej => 
+    ej.nombre.toLowerCase().includes(busquedaCatalogo.toLowerCase())
+  );
+
   return (
     <div className="min-h-screen bg-[#F8FAFC] flex flex-col relative">
       
@@ -290,28 +295,46 @@ export default function CentroRutinas() {
           </div>
         </aside>
 
-        {/* COLUMNA 2: CATÁLOGO MAESTRO */}
+        {/* COLUMNA 2: CATÁLOGO MAESTRO MODIFICADO */}
         <aside className="w-80 bg-white border-r border-slate-200 flex flex-col h-[calc(100vh-80px)]">
-          <div className="p-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
-            <h3 className="font-bold text-slate-500 uppercase text-xs tracking-wider">Catálogo</h3>
-            <button onClick={abrirModalCrearCatalogo} className="text-xs font-bold bg-emerald-100 text-emerald-700 px-2.5 py-1.5 rounded-lg hover:bg-emerald-200">+ Nuevo</button>
+          <div className="p-4 border-b border-slate-100 bg-slate-50 flex flex-col gap-3">
+            <div className="flex justify-between items-center">
+              <h3 className="font-bold text-slate-500 uppercase text-xs tracking-wider">Catálogo</h3>
+              <button onClick={abrirModalCrearCatalogo} className="text-xs font-bold bg-emerald-100 text-emerald-700 px-2.5 py-1.5 rounded-lg hover:bg-emerald-200 shrink-0">
+                + Nuevo
+              </button>
+            </div>
+            <div className="relative">
+              <input 
+                type="text" 
+                placeholder="Buscar ejercicio..." 
+                value={busquedaCatalogo}
+                onChange={(e) => setBusquedaCatalogo(e.target.value)}
+                className="w-full bg-white border border-slate-200 rounded-lg pl-8 pr-3 py-2 text-sm focus:outline-none focus:border-emerald-500 transition-colors shadow-sm"
+              />
+              <svg className="w-4 h-4 text-slate-400 absolute left-2.5 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+            </div>
           </div>
           <div className="p-4 overflow-y-auto flex-1 space-y-2">
-            {catalogo.map(ej => (
-              <div key={ej.id} onClick={() => agregarAlLienzo(ej)} className="p-3 border border-slate-100 rounded-xl hover:border-emerald-300 hover:bg-emerald-50 cursor-pointer transition-all group flex justify-between items-center">
-                <span className="font-bold text-slate-700 group-hover:text-emerald-700 text-sm">{ej.nombre}</span>
-                <div className="flex items-center gap-2">
-                  <button onClick={(e) => abrirModalEditarCatalogo(e, ej)} className="opacity-0 group-hover:opacity-100 p-1 text-slate-400 hover:text-blue-600 rounded transition-all text-xs">✏️</button>
-                  <span className="text-emerald-500 opacity-0 group-hover:opacity-100 font-bold text-lg leading-none">+</span>
+            {catalogoFiltrado.length > 0 ? (
+              catalogoFiltrado.map(ej => (
+                <div key={ej.id} onClick={() => agregarAlLienzo(ej)} className="p-3 border border-slate-100 rounded-xl hover:border-emerald-300 hover:bg-emerald-50 cursor-pointer transition-all group flex justify-between items-center">
+                  <span className="font-bold text-slate-700 group-hover:text-emerald-700 text-sm">{ej.nombre}</span>
+                  <div className="flex items-center gap-2">
+                    <button onClick={(e) => abrirModalEditarCatalogo(e, ej)} className="opacity-0 group-hover:opacity-100 p-1 text-slate-400 hover:text-blue-600 rounded transition-all text-xs">✏️</button>
+                    <span className="text-emerald-500 opacity-0 group-hover:opacity-100 font-bold text-lg leading-none">+</span>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))
+            ) : (
+              <p className="text-center text-slate-400 text-sm mt-4">No se encontraron ejercicios</p>
+            )}
           </div>
         </aside>
 
         {/* COLUMNA 3: LIENZO (CONSTRUCTOR) */}
         <section className="flex-1 bg-slate-50 p-8 overflow-y-auto h-[calc(100vh-80px)]">
-          <div className="max-w-3xl mx-auto space-y-6">
+          <div className="max-w-2xl mx-auto space-y-6">
             
             {/* Aviso de Modo Edición */}
             {rutinaEditandoId && (
@@ -339,8 +362,6 @@ export default function CentroRutinas() {
                 <div key={index} className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center gap-6 group">
                   <div className="w-8 h-8 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center font-bold text-sm shrink-0">{index + 1}</div>
                   <div className="flex-1"><h4 className="font-black text-slate-800 text-base">{ej.nombre}</h4></div>
-                  
-                  {/* 👇 NUEVO: Campos actualizados con input de descanso */}
                   <div className="flex gap-3">
                     <div className="text-center">
                       <span className="text-[10px] uppercase font-bold text-slate-400 block mb-1">Series</span>
@@ -359,7 +380,6 @@ export default function CentroRutinas() {
                       <input type="number" min="0" step="5" value={ej.descansoSeg} onChange={e => actualizarEjercicioInline(index, 'descansoSeg', e.target.value)} className="w-16 bg-amber-50 border border-amber-200 rounded-lg py-1.5 text-center font-bold text-amber-700 outline-none focus:border-amber-500"/>
                     </div>
                   </div>
-
                   <button onClick={() => quitarDelLienzo(index)} className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all" title="Eliminar ejercicio">
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                   </button>
