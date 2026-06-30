@@ -19,6 +19,9 @@ export default function PortalAlumno() {
   // Estado para la Rutina
   const [rutinasAlumno, setRutinasAlumno] = useState([]);
   const [cargandoRutinas, setCargandoRutinas] = useState(false);
+  
+  // 👇 NUEVO: Estado para controlar qué rutinas están expandidas (acordeón)
+  const [rutinasExpandidas, setRutinasExpandidas] = useState({});
 
   // Estado para el Modal de Información del Ejercicio
   const [ejercicioSeleccionadoInfo, setEjercicioSeleccionadoInfo] = useState(null);
@@ -49,6 +52,8 @@ export default function PortalAlumno() {
 
   const buscarRutinas = async (clienteId) => {
     setCargandoRutinas(true);
+    // Reiniciamos el estado de expansión al buscar nuevas rutinas
+    setRutinasExpandidas({});
     try {
       const res = await fetch(`${API_URL}/api/rutinas/cliente/${clienteId}`);
       if (res.ok) {
@@ -97,11 +102,8 @@ export default function PortalAlumno() {
     }
   };
 
-  // Función MUY robusta para extraer el nombre real (Incluso si es un texto plano)
   const obtenerNombreReal = (obj) => {
     if (!obj) return '';
-    
-    // ¡AQUÍ ESTÁ LA SOLUCIÓN MÁGICA! Si el backend mandó un simple texto, lo usamos directamente.
     if (typeof obj === 'string') return obj;
 
     const nombre = obj.nombre || 
@@ -116,7 +118,6 @@ export default function PortalAlumno() {
   };
 
   const handleSeleccionarIntegrante = (integrante) => {
-    // Si es un texto plano, lo convertimos a objeto temporal para que la app no explote
     const clienteReal = typeof integrante === 'string' ? { nombre: integrante } : (integrante.cliente || integrante.Cliente || integrante);
     
     const nombreSeguro = obtenerNombreReal(integrante);
@@ -124,12 +125,11 @@ export default function PortalAlumno() {
 
     setIntegranteActivo(integranteFormateado);
     
-    // Intentamos buscar rutinas SOLO si el backend nos envió un ID
     if (clienteReal && clienteReal.id) {
       buscarRutinas(clienteReal.id);
     } else {
       console.error("ALERTA: Tu backend solo envió el nombre del cliente, pero NO su ID. No se pueden buscar sus rutinas.");
-      setRutinasAlumno([]); // Dejamos rutinas vacías para que el usuario no espere eternamente
+      setRutinasAlumno([]); 
     }
     
     setPaso('rutina');
@@ -144,7 +144,16 @@ export default function PortalAlumno() {
     setErrorPin(false);
     setBusqueda('');
     setRutinasAlumno([]);
+    setRutinasExpandidas({});
     setEjercicioSeleccionadoInfo(null);
+  };
+
+  // 👇 NUEVO: Función para alternar la visibilidad de una rutina
+  const toggleRutina = (rutinaId) => {
+    setRutinasExpandidas(prev => ({
+      ...prev,
+      [rutinaId]: !prev[rutinaId] // Si estaba abierta la cierra, si estaba cerrada la abre
+    }));
   };
 
   const listaFiltrada = (tipoIngreso === 'familia' ? familias : individuos).filter(item =>
@@ -325,57 +334,82 @@ export default function PortalAlumno() {
               </div>
             ) : (
               <div className="space-y-6">
-                {rutinasAlumno.map((rutina) => (
-                  <div key={rutina.id} className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
-                    <div className="bg-slate-900 px-5 py-4 flex justify-between items-center">
-                      <h3 className="font-bold text-white text-lg">{rutina.nombre}</h3>
-                      <span className="bg-emerald-500 text-white text-xs font-bold px-2 py-1 rounded-md">{rutina.diaSemana}</span>
-                    </div>
-                    
-                    <div className="divide-y divide-slate-100 p-2">
-                      {rutina.ejercicios.map((ej) => (
-                        <div key={ej.id} className="flex items-start gap-4 p-4 hover:bg-slate-50 transition-colors rounded-xl">
-                          <div className="mt-1">
-                            <input type="checkbox" className="w-6 h-6 text-emerald-500 border-gray-300 rounded-md focus:ring-emerald-500 cursor-pointer" />
-                          </div>
-                          <div className="flex-1">
-                            <div className="flex items-center justify-between mb-1">
-                              <h4 className="font-bold text-slate-800 text-lg leading-tight">{ej.ejercicio.nombre}</h4>
-                              <button 
-                                onClick={(e) => {
-                                  e.preventDefault(); 
-                                  setEjercicioSeleccionadoInfo(ej.ejercicio);
-                                }}
-                                className="w-7 h-7 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center hover:bg-emerald-100 transition-colors ml-2 flex-shrink-0"
-                                title="Ver detalles del ejercicio"
-                              >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                              </button>
-                            </div>
-                            <div className="flex flex-wrap gap-2 mt-2">
-                              <span className="bg-slate-100 text-slate-600 text-xs font-bold px-2 py-1.5 rounded-md">
-                                {ej.series} x {ej.repeticiones} reps
-                              </span>
-                              {ej.peso > 0 && (
-                                <span className="bg-emerald-50 text-emerald-700 text-xs font-bold px-2 py-1.5 rounded-md">
-                                  {ej.peso} kg
-                                </span>
-                              )}
-                              {ej.descansoSeg > 0 && (
-                                <span className="bg-amber-50 text-amber-700 text-xs font-bold px-2 py-1.5 rounded-md">
-                                  ⏳ {ej.descansoSeg}s desc.
-                                </span>
-                              )}
-                            </div>
-                          </div>
+                {rutinasAlumno.map((rutina) => {
+                  // Verificamos si esta rutina específica está expandida
+                  const isExpanded = rutinasExpandidas[rutina.id];
+
+                  return (
+                    <div key={rutina.id} className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+                      
+                      {/* 👇 NUEVO: El encabezado ahora es un botón que activa el acordeón */}
+                      <button 
+                        onClick={() => toggleRutina(rutina.id)}
+                        className="w-full bg-slate-900 px-5 py-4 flex justify-between items-center cursor-pointer hover:bg-slate-800 transition-colors active:scale-[0.99]"
+                      >
+                        <div className="flex items-center gap-3">
+                          <h3 className="font-bold text-white text-lg text-left">{rutina.nombre}</h3>
+                          <span className="bg-emerald-500 text-white text-xs font-bold px-2 py-1 rounded-md whitespace-nowrap">
+                            {rutina.diaSemana}
+                          </span>
                         </div>
-                      ))}
-                      {rutina.ejercicios.length === 0 && (
-                        <div className="p-5 text-center text-slate-500 text-sm">No hay ejercicios agregados a esta rutina.</div>
+                        {/* Icono de flecha que gira dependiendo del estado */}
+                        <svg 
+                          className={`w-5 h-5 text-slate-400 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`} 
+                          fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </button>
+                      
+                      {/* 👇 NUEVO: Solo renderiza los ejercicios si 'isExpanded' es true */}
+                      {isExpanded && (
+                        <div className="divide-y divide-slate-100 p-2 animate-fade-in">
+                          {rutina.ejercicios.map((ej) => (
+                            <div key={ej.id} className="flex items-start gap-4 p-4 hover:bg-slate-50 transition-colors rounded-xl">
+                              <div className="mt-1">
+                                <input type="checkbox" className="w-6 h-6 text-emerald-500 border-gray-300 rounded-md focus:ring-emerald-500 cursor-pointer" />
+                              </div>
+                              <div className="flex-1">
+                                <div className="flex items-center justify-between mb-1">
+                                  <h4 className="font-bold text-slate-800 text-lg leading-tight">{ej.ejercicio.nombre}</h4>
+                                  <button 
+                                    onClick={(e) => {
+                                      e.preventDefault(); 
+                                      setEjercicioSeleccionadoInfo(ej.ejercicio);
+                                    }}
+                                    className="w-7 h-7 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center hover:bg-emerald-100 transition-colors ml-2 flex-shrink-0"
+                                    title="Ver detalles del ejercicio"
+                                  >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                  </button>
+                                </div>
+                                <div className="flex flex-wrap gap-2 mt-2">
+                                  <span className="bg-slate-100 text-slate-600 text-xs font-bold px-2 py-1.5 rounded-md">
+                                    {ej.series} x {ej.repeticiones} reps
+                                  </span>
+                                  {ej.peso > 0 && (
+                                    <span className="bg-emerald-50 text-emerald-700 text-xs font-bold px-2 py-1.5 rounded-md">
+                                      {ej.peso} kg
+                                    </span>
+                                  )}
+                                  {ej.descansoSeg > 0 && (
+                                    <span className="bg-amber-50 text-amber-700 text-xs font-bold px-2 py-1.5 rounded-md">
+                                      ⏳ {ej.descansoSeg}s desc.
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                          {rutina.ejercicios.length === 0 && (
+                            <div className="p-5 text-center text-slate-500 text-sm">No hay ejercicios agregados a esta rutina.</div>
+                          )}
+                        </div>
                       )}
+
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
                 
                 <button onClick={reiniciar} className="w-full bg-emerald-50 text-emerald-700 font-bold py-4 rounded-2xl hover:bg-emerald-100 transition-colors border border-emerald-200">
                   FINALIZAR ENTRENAMIENTO
