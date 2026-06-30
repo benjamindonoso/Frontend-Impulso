@@ -119,6 +119,13 @@ export default function CentroRutinas() {
     setEjerciciosSeleccionados(nuevos);
   };
 
+  // 👇 NUEVO: Función para quitar un ejercicio del lienzo
+  const quitarDelLienzo = (index) => {
+    const nuevos = [...ejerciciosSeleccionados];
+    nuevos.splice(index, 1);
+    setEjerciciosSeleccionados(nuevos);
+  };
+
   const guardarOActualizarRutina = async () => {
     if (!clienteSeleccionado) return alert("Selecciona un cliente primero");
     if (ejerciciosSeleccionados.length === 0) return alert("Agrega al menos un ejercicio");
@@ -304,7 +311,7 @@ export default function CentroRutinas() {
 
         {/* COLUMNA 3: LIENZO (CONSTRUCTOR) */}
         <section className="flex-1 bg-slate-50 p-8 overflow-y-auto h-[calc(100vh-80px)]">
-          <div className="max-w-2xl mx-auto space-y-6">
+          <div className="max-w-3xl mx-auto space-y-6">
             
             {/* Aviso de Modo Edición */}
             {rutinaEditandoId && (
@@ -332,21 +339,28 @@ export default function CentroRutinas() {
                 <div key={index} className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center gap-6 group">
                   <div className="w-8 h-8 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center font-bold text-sm shrink-0">{index + 1}</div>
                   <div className="flex-1"><h4 className="font-black text-slate-800 text-base">{ej.nombre}</h4></div>
+                  
+                  {/* 👇 NUEVO: Campos actualizados con input de descanso */}
                   <div className="flex gap-3">
                     <div className="text-center">
                       <span className="text-[10px] uppercase font-bold text-slate-400 block mb-1">Series</span>
-                      <input type="number" min="1" value={ej.series} onChange={e => actualizarEjercicioInline(index, 'series', e.target.value)} className="w-14 bg-slate-50 border border-slate-200 rounded-lg py-1 text-center font-bold text-slate-700 outline-none focus:border-emerald-500"/>
+                      <input type="number" min="1" value={ej.series} onChange={e => actualizarEjercicioInline(index, 'series', e.target.value)} className="w-16 bg-slate-50 border border-slate-200 rounded-lg py-1.5 text-center font-bold text-slate-700 outline-none focus:border-emerald-500"/>
                     </div>
                     <div className="text-center">
                       <span className="text-[10px] uppercase font-bold text-slate-400 block mb-1">Reps</span>
-                      <input type="number" min="1" value={ej.repeticiones} onChange={e => actualizarEjercicioInline(index, 'repeticiones', e.target.value)} className="w-14 bg-slate-50 border border-slate-200 rounded-lg py-1 text-center font-bold text-slate-700 outline-none focus:border-emerald-500"/>
+                      <input type="number" min="1" value={ej.repeticiones} onChange={e => actualizarEjercicioInline(index, 'repeticiones', e.target.value)} className="w-16 bg-slate-50 border border-slate-200 rounded-lg py-1.5 text-center font-bold text-slate-700 outline-none focus:border-emerald-500"/>
                     </div>
                     <div className="text-center">
                       <span className="text-[10px] uppercase font-bold text-slate-400 block mb-1">Peso(kg)</span>
-                      <input type="number" min="0" value={ej.peso} onChange={e => actualizarEjercicioInline(index, 'peso', e.target.value)} className="w-14 bg-slate-50 border border-slate-200 rounded-lg py-1 text-center font-bold text-slate-700 outline-none focus:border-emerald-500"/>
+                      <input type="number" min="0" value={ej.peso} onChange={e => actualizarEjercicioInline(index, 'peso', e.target.value)} className="w-16 bg-slate-50 border border-slate-200 rounded-lg py-1.5 text-center font-bold text-slate-700 outline-none focus:border-emerald-500"/>
+                    </div>
+                    <div className="text-center">
+                      <span className="text-[10px] uppercase font-bold text-slate-400 block mb-1">Desc(s)</span>
+                      <input type="number" min="0" step="5" value={ej.descansoSeg} onChange={e => actualizarEjercicioInline(index, 'descansoSeg', e.target.value)} className="w-16 bg-amber-50 border border-amber-200 rounded-lg py-1.5 text-center font-bold text-amber-700 outline-none focus:border-amber-500"/>
                     </div>
                   </div>
-                  <button onClick={() => quitarDelLienzo(index)} className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all">
+
+                  <button onClick={() => quitarDelLienzo(index)} className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all" title="Eliminar ejercicio">
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                   </button>
                 </div>
