@@ -5,6 +5,7 @@ import Dashboard from './views/Dashboard';
 import GestionClientes from './components/GestionClientes'; 
 import CentroRutinas from './components/CentroRutinas';
 import Auditoria from './components/Auditoria';
+import GestionFamilias from './components/GestionFamilias';
 
 export default function App() {
   return (
@@ -14,6 +15,7 @@ export default function App() {
         <Route path="/" element={<PortalAlumno />} />
 
         <Route path="/admin/gestion-clientes" element={<GestionClientes />} />
+        <Route path="/admin/gestion-familias" element={<GestionFamilias />} />
         
         <Route path="/admin/rutinas" element={<CentroRutinas />} />
 
