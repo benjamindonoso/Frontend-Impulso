@@ -117,7 +117,13 @@ export default function CentroRutinas() {
 
   const actualizarEjercicioInline = (index, campo, valor) => {
     const nuevos = [...ejerciciosSeleccionados];
-    nuevos[index][campo] = Number(valor);
+    // Si el campo es 'observaciones', guardamos el valor tal cual (texto)
+    // Si es numérico, lo convertimos
+    if (campo === 'observaciones') {
+      nuevos[index][campo] = valor;
+    } else {
+      nuevos[index][campo] = Number(valor);
+    }
     setEjerciciosSeleccionados(nuevos);
   };
 
