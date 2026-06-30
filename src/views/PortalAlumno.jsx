@@ -106,14 +106,14 @@ export default function PortalAlumno() {
     if (!obj) return '';
     if (typeof obj === 'string') return obj;
 
-    const nombre = obj.nombre || 
-                   obj.nombres || 
-                   obj.Cliente?.nombre || 
-                   obj.cliente?.nombre || 
-                   obj.Cliente?.nombres || 
-                   obj.cliente?.nombres ||
-                   obj.usuario?.nombre ||
-                   obj.Usuario?.nombre;
+    const nombre =  obj.nombre || 
+                    obj.nombres || 
+                    obj.Cliente?.nombre || 
+                    obj.cliente?.nombre || 
+                    obj.Cliente?.nombres || 
+                    obj.cliente?.nombres ||
+                    obj.usuario?.nombre ||
+                    obj.Usuario?.nombre;
     return nombre || '';
   };
 
@@ -253,7 +253,7 @@ export default function PortalAlumno() {
             <h2 className="text-xl font-bold text-slate-800 mb-6 text-center">¿Cuál es tu {tipoIngreso === 'familia' ? 'grupo familiar' : 'nombre'}?</h2>
             <input type="text" placeholder={`Buscar ${tipoIngreso === 'familia' ? 'familia...' : 'nombre...'}`} className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 mb-6 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-800 shadow-sm" value={busqueda} onChange={(e) => setBusqueda(e.target.value)} />
             {cargandoDirectorio ? (
-               <div className="text-center text-slate-400 py-8">Cargando directorio...</div>
+              <div className="text-center text-slate-400 py-8">Cargando directorio...</div>
             ) : (
               <div className="bg-white rounded-xl shadow-sm border border-slate-100 divide-y divide-slate-100 overflow-hidden max-h-80 overflow-y-auto">
                 {listaFiltrada.length === 0 ? (
@@ -395,6 +395,11 @@ export default function PortalAlumno() {
                                   {ej.descansoSeg > 0 && (
                                     <span className="bg-amber-50 text-amber-700 text-xs font-bold px-2 py-1.5 rounded-md">
                                       ⏳ {ej.descansoSeg}s desc.
+                                    </span>
+                                  )}
+                                  {ej.observaciones && (
+                                    <span className="bg-blue-50 text-blue-700 text-xs font-bold px-2 py-1.5 rounded-md w-full mt-1">
+                                      💡 {ej.observaciones}
                                     </span>
                                   )}
                                 </div>
