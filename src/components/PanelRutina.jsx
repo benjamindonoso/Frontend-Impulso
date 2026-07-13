@@ -102,15 +102,13 @@ export default function PanelRutina({ isOpen, onClose, cliente }) {
       diaSemana: rutina.diaSemana,
       descripcion: rutina.descripcion,
       mesocicloId: Number(rutina.mesocicloId),
-      clienteId: Number(cliente.id),
       listaEjercicios: ejercicios.map((ej, index) => ({
         ejercicioId: ej.ejercicioId,
         orden: index + 1,
-        series: Number(ej.series),
-        repeticiones: Number(ej.repeticiones),
-        peso: Number(ej.peso),
-        descansoSeg: Number(ej.descansoSeg),
-        observaciones: ej.observaciones || ''
+        series: ej.series,
+        repeticiones: ej.repeticiones,
+        peso: ej.peso,
+        descansoSeg: ej.descansoSeg
       }))
     };
 
@@ -175,7 +173,6 @@ export default function PanelRutina({ isOpen, onClose, cliente }) {
             </svg>
           </button>
         </div>
-
         <div className="p-6 flex-1 overflow-y-auto">
           {mensaje && (
             <div

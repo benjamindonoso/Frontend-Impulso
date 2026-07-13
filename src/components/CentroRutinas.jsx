@@ -7,8 +7,8 @@ export default function CentroRutinas() {
   const [clientes, setClientes] = useState([]);
   const [catalogo, setCatalogo] = useState([]);
   const [clienteSeleccionado, setClienteSeleccionado] = useState('');
-  const [mesociclos, setMesociclos] = useState([]); 
-  const [rutinaEditandoId, setRutinaEditandoId] = useState(null); 
+  const [mesociclos, setMesociclos] = useState([]); // Array de semanas
+  const [rutinaEditandoId, setRutinaEditandoId] = useState(null); // null = nueva rutina, número = editando existente
   const [rutina, setRutina] = useState({ nombre: '', diaSemana: 'Lunes', descripcion: '', mesocicloId: '' });
   const [ejerciciosSeleccionados, setEjerciciosSeleccionados] = useState([]);
   const [guardando, setGuardando] = useState(false);
@@ -18,10 +18,12 @@ export default function CentroRutinas() {
   const [nuevoEjercicio, setNuevoEjercicio] = useState({ nombre: '', descripcion: '', videoUrl: '' });
   const [guardandoEjercicio, setGuardandoEjercicio] = useState(false);
   const [busquedaCatalogo, setBusquedaCatalogo] = useState('');
+
   useEffect(() => {
     fetch(`${API_URL}/api/clientes`)
       .then(res => res.json())
       .then(data => setClientes(data.filter(c => c.activo)));
+
     cargarCatalogo();
   }, []);
 
@@ -61,6 +63,7 @@ export default function CentroRutinas() {
     const nombreSemana = prompt("Nombre de la nueva semana (Ej: Semana 1, Semana Descarga):", sugerencia);
     
     if (!nombreSemana) return; 
+
     try {
       const res = await fetch(`${API_URL}/api/rutinas/mesociclo`, {
         method: 'POST',
@@ -94,7 +97,6 @@ export default function CentroRutinas() {
       descripcion: plan.descripcion || '',
       mesocicloId: idMesocicloPerteneciente 
     });
-    
     setEjerciciosSeleccionados(plan.ejercicios.map(ej => ({
       ejercicioId: ej.ejercicioId,
       nombre: ej.ejercicio.nombre,
@@ -169,19 +171,17 @@ export default function CentroRutinas() {
     const metodo = rutinaEditandoId ? 'PUT' : 'POST';
 
     const payload = {
-      nombre: rutina.nombre,
-      diaSemana: rutina.diaSemana,
-      descripcion: rutina.descripcion,
+      ...rutina,
       mesocicloId: Number(rutina.mesocicloId),
-      clienteId: Number(clienteSeleccionado),
+      clienteId: Number(clienteSeleccionado), // ¡RESTAURADO EL clienteId!
       listaEjercicios: ejerciciosSeleccionados.map((ej, idx) => ({
         ejercicioId: ej.ejercicioId,
         orden: idx + 1,
-        series: Number(ej.series),
-        repeticiones: Number(ej.repeticiones),
-        peso: Number(ej.peso),
-        descansoSeg: Number(ej.descansoSeg),
-        observaciones: ej.observaciones || ''
+        series: ej.series,
+        repeticiones: ej.repeticiones,
+        peso: ej.peso,
+        descansoSeg: ej.descansoSeg,
+        observaciones: ej.observaciones
       }))
     };
 
