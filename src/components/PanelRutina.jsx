@@ -130,7 +130,9 @@ export default function PanelRutina({ isOpen, onClose, cliente }) {
         setTimeout(() => onClose(), 1500);
       } else {
         setMensaje({ tipo: "error", texto: "Error al guardar la rutina." });
+        console.log("Error response:", await response.text());
       }
+
     } catch (error) {
       setMensaje({ tipo: "error", texto: "Error de conexión." });
     } finally {
