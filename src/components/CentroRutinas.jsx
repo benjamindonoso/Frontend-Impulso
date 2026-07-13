@@ -9,11 +9,11 @@ export default function CentroRutinas() {
   
   // Estados para la gestión de rutinas del cliente
   const [clienteSeleccionado, setClienteSeleccionado] = useState('');
-  const [rutinasExistentes, setRutinasExistentes] = useState([]);
+  const [mesociclos, setMesociclos] = useState([]); // Array de semanas
   const [rutinaEditandoId, setRutinaEditandoId] = useState(null); // null = nueva rutina, número = editando existente
 
   // Estados del lienzo de trabajo
-  const [rutina, setRutina] = useState({ nombre: '', diaSemana: 'Lunes', descripcion: '' });
+  const [rutina, setRutina] = useState({ nombre: '', diaSemana: 'Lunes', descripcion: '', mesocicloId: '' });
   const [ejerciciosSeleccionados, setEjerciciosSeleccionados] = useState([]);
   const [guardando, setGuardando] = useState(false);
 
@@ -40,7 +40,7 @@ export default function CentroRutinas() {
       cargarRutinasDelCliente(clienteSeleccionado);
       limpiarLienzo();
     } else {
-      setRutinasExistentes([]);
+      setMesociclos([]);
       limpiarLienzo();
     }
   }, [clienteSeleccionado]);
@@ -52,25 +52,61 @@ export default function CentroRutinas() {
   };
 
   const cargarRutinasDelCliente = (clienteId) => {
+    // Ahora llamamos a la ruta base de cliente, que en el backend nos devuelve los mesociclos
     fetch(`${API_URL}/api/rutinas/cliente/${clienteId}`)
       .then(res => res.json())
-      .then(data => setRutinasExistentes(data))
+      .then(data => setMesociclos(data))
       .catch(err => console.error("Error al obtener rutinas:", err));
   };
 
   const limpiarLienzo = () => {
-    setRutina({ nombre: '', diaSemana: 'Lunes', descripcion: '' });
+    setRutina({ nombre: '', diaSemana: 'Lunes', descripcion: '', mesocicloId: '' });
     setEjerciciosSeleccionados([]);
     setRutinaEditandoId(null);
   };
 
+  const handleCrearSemana = async () => {
+    if (!clienteSeleccionado) return alert("Selecciona un cliente primero");
+    
+    // Sugerimos un nombre basado en la cantidad actual
+    const sugerencia = `Semana ${mesociclos.length + 1}`;
+    const nombreSemana = prompt("Nombre de la nueva semana (Ej: Semana 1, Semana Descarga):", sugerencia);
+    
+    if (!nombreSemana) return; // El usuario canceló
+
+    try {
+      const res = await fetch(`${API_URL}/api/rutinas/mesociclo`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({ 
+          nombre: nombreSemana, 
+          orden: mesociclos.length + 1, 
+          clienteId: clienteSeleccionado 
+        })
+      });
+      
+      if (res.ok) {
+        cargarRutinasDelCliente(clienteSeleccionado); // Recargamos para ver la nueva semana
+      } else {
+        alert("Error al crear la semana");
+      }
+    } catch (error) {
+      console.error("Error de conexión", error);
+      alert("Error de conexión");
+    }
+  };
+
   // --- MANEJO DE RUTINAS EXISTENTES (CARGAR / BORRAR) ---
-  const handleCargarRutinaAEditar = (plan) => {
+  const handleCargarRutinaAEditar = (plan, idMesocicloPerteneciente) => {
     setRutinaEditandoId(plan.id);
     setRutina({
       nombre: plan.nombre,
       diaSemana: plan.diaSemana,
-      descripcion: plan.descripcion || ''
+      descripcion: plan.descripcion || '',
+      mesocicloId: idMesocicloPerteneciente // Asignamos la semana a la que pertenece
     });
     // Mapeamos los ejercicios para el lienzo
     setEjerciciosSeleccionados(plan.ejercicios.map(ej => ({
@@ -79,7 +115,8 @@ export default function CentroRutinas() {
       series: ej.series,
       repeticiones: ej.repeticiones,
       peso: ej.peso || 0,
-      descansoSeg: ej.descansoSeg || 60
+      descansoSeg: ej.descansoSeg || 60,
+      observaciones: ej.observaciones || ''
     })));
   };
 
@@ -87,7 +124,8 @@ export default function CentroRutinas() {
     if (!confirm("¿Seguro que deseas borrar por completo esta rutina antigua?")) return;
     try {
       const res = await fetch(`${API_URL}/api/rutinas/${idPlan}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
       if (res.ok) {
         alert("Rutina eliminada correctamente");
@@ -111,7 +149,8 @@ export default function CentroRutinas() {
       series: 4,
       repeticiones: 12,
       peso: 0,
-      descansoSeg: 60
+      descansoSeg: 60,
+      observaciones: ''
     }]);
   };
 
@@ -133,6 +172,7 @@ export default function CentroRutinas() {
 
   const guardarOActualizarRutina = async () => {
     if (!clienteSeleccionado) return alert("Selecciona un cliente primero");
+    if (!rutina.mesocicloId) return alert("Debes seleccionar a qué Semana pertenece esta rutina.");
     if (ejerciciosSeleccionados.length === 0) return alert("Agrega al menos un ejercicio");
     if (!rutina.nombre) return alert("Ponle un nombre a la rutina");
 
@@ -145,6 +185,7 @@ export default function CentroRutinas() {
 
     const payload = {
       ...rutina,
+      mesocicloId: Number(rutina.mesocicloId), // Aseguramos que sea número
       clienteId: clienteSeleccionado,
       listaEjercicios: ejerciciosSeleccionados.map((ej, idx) => ({
         ejercicioId: ej.ejercicioId,
@@ -275,27 +316,47 @@ export default function CentroRutinas() {
       {/* ÁREA DE TRABAJO TRIPLE COLUMNA */}
       <main className="flex-1 flex overflow-hidden">
         
-        {/* COLUMNA 1: HISTORIAL DE RUTINAS DEL CLIENTE */}
+        {/* COLUMNA 1: HISTORIAL DE RUTINAS DEL CLIENTE (AGRUPADO POR SEMANAS) */}
         <aside className="w-64 bg-slate-50 border-r border-slate-200 flex flex-col h-[calc(100vh-80px)]">
-          <div className="p-4 border-b border-slate-200 bg-slate-100/50">
+          <div className="p-4 border-b border-slate-200 bg-slate-100/50 flex justify-between items-center">
             <h3 className="font-bold text-slate-600 uppercase text-[10px] tracking-wider">Historial del Alumno</h3>
+            {/* BOTÓN PARA CREAR NUEVA SEMANA */}
+            {clienteSeleccionado && (
+              <button onClick={handleCrearSemana} className="text-[10px] font-bold bg-emerald-100 text-emerald-700 px-2 py-1 rounded hover:bg-emerald-200 transition-colors">
+                + SEMANA
+              </button>
+            )}
           </div>
-          <div className="p-3 overflow-y-auto flex-1 space-y-2">
-            {rutinasExistentes.map(plan => (
-              <div key={plan.id} className={`p-3 rounded-xl border transition-all ${rutinaEditandoId === plan.id ? 'bg-blue-50 border-blue-400 shadow-sm' : 'bg-white border-slate-200'}`}>
-                <div className="flex justify-between items-start gap-1">
-                  <div>
-                    <h4 className="font-bold text-slate-800 text-sm leading-tight">{plan.nombre}</h4>
-                    <span className="text-[10px] bg-slate-100 text-slate-500 font-bold px-1.5 py-0.5 rounded mt-1 inline-block">{plan.diaSemana}</span>
-                  </div>
-                  <div className="flex gap-1">
-                    <button onClick={() => handleCargarRutinaAEditar(plan)} className="p-1 hover:bg-blue-100 rounded text-xs" title="Cargar y Editar">✏️</button>
-                    <button onClick={() => handleEliminarRutinaCompleta(plan.id)} className="p-1 hover:bg-red-50 rounded text-xs" title="Eliminar del Alumno">🗑️</button>
-                  </div>
+          <div className="p-3 overflow-y-auto flex-1 space-y-4">
+            
+            {/* Renderizado de Mesociclos (Semanas) */}
+            {mesociclos.map(meso => (
+              <div key={meso.id} className="mb-2">
+                <h4 className="font-black text-slate-700 text-xs uppercase mb-2 border-b border-slate-200 pb-1">{meso.nombre}</h4>
+                <div className="space-y-2">
+                  {meso.rutinas && meso.rutinas.length > 0 ? (
+                    meso.rutinas.map(plan => (
+                      <div key={plan.id} className={`p-3 rounded-xl border transition-all ${rutinaEditandoId === plan.id ? 'bg-blue-50 border-blue-400 shadow-sm' : 'bg-white border-slate-200'}`}>
+                        <div className="flex justify-between items-start gap-1">
+                          <div>
+                            <h4 className="font-bold text-slate-800 text-sm leading-tight">{plan.nombre}</h4>
+                            <span className="text-[10px] bg-slate-100 text-slate-500 font-bold px-1.5 py-0.5 rounded mt-1 inline-block">{plan.diaSemana}</span>
+                          </div>
+                          <div className="flex gap-1">
+                            <button onClick={() => handleCargarRutinaAEditar(plan, meso.id)} className="p-1 hover:bg-blue-100 rounded text-xs" title="Cargar y Editar">✏️</button>
+                            <button onClick={() => handleEliminarRutinaCompleta(plan.id)} className="p-1 hover:bg-red-50 rounded text-xs" title="Eliminar del Alumno">🗑️</button>
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-slate-400 text-[10px] italic mb-2">Sin rutinas en esta semana</p>
+                  )}
                 </div>
               </div>
             ))}
-            {clienteSeleccionado && rutinasExistentes.length === 0 && <p className="text-slate-400 text-xs text-center py-4">Sin rutinas previas.</p>}
+
+            {clienteSeleccionado && mesociclos.length === 0 && <p className="text-slate-400 text-xs text-center py-4">Sin semanas creadas.<br/>Haz clic en "+ SEMANA" arriba.</p>}
             {!clienteSeleccionado && <p className="text-slate-400 text-xs text-center py-4">Elige un cliente para ver su historial.</p>}
           </div>
         </aside>
@@ -354,6 +415,16 @@ export default function CentroRutinas() {
                 <label className="block text-xs font-bold text-slate-400 uppercase mb-2">Nombre del Plan</label>
                 <input type="text" value={rutina.nombre} onChange={e => setRutina({...rutina, nombre: e.target.value})} placeholder="Ej: Tren Superior Fuerza" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-bold text-slate-800 outline-none focus:border-emerald-500 focus:bg-white transition-all"/>
               </div>
+
+              {/* SELECTOR DE SEMANA */}
+              <div className="w-40">
+                <label className="block text-xs font-bold text-slate-400 uppercase mb-2">Semana</label>
+                <select value={rutina.mesocicloId} onChange={e => setRutina({...rutina, mesocicloId: Number(e.target.value)})} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-bold text-slate-800 outline-none focus:border-emerald-500 focus:bg-white transition-all">
+                  <option value="">Selecciona...</option>
+                  {mesociclos.map(m => <option key={m.id} value={m.id}>{m.nombre}</option>)}
+                </select>
+              </div>
+
               <div className="w-40">
                 <label className="block text-xs font-bold text-slate-400 uppercase mb-2">Día</label>
                 <select value={rutina.diaSemana} onChange={e => setRutina({...rutina, diaSemana: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-bold text-slate-800 outline-none focus:border-emerald-500 focus:bg-white transition-all">
