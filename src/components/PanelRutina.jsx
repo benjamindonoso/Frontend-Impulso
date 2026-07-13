@@ -102,13 +102,15 @@ export default function PanelRutina({ isOpen, onClose, cliente }) {
       diaSemana: rutina.diaSemana,
       descripcion: rutina.descripcion,
       mesocicloId: Number(rutina.mesocicloId),
+      clienteId: Number(cliente.id),
       listaEjercicios: ejercicios.map((ej, index) => ({
         ejercicioId: ej.ejercicioId,
         orden: index + 1,
-        series: ej.series,
-        repeticiones: ej.repeticiones,
-        peso: ej.peso,
-        descansoSeg: ej.descansoSeg
+        series: Number(ej.series),
+        repeticiones: Number(ej.repeticiones),
+        peso: Number(ej.peso),
+        descansoSeg: Number(ej.descansoSeg),
+        observaciones: ej.observaciones || ''
       }))
     };
 

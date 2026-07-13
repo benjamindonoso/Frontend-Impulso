@@ -6,35 +6,25 @@ export default function CentroRutinas() {
   const navigate = useNavigate();
   const [clientes, setClientes] = useState([]);
   const [catalogo, setCatalogo] = useState([]);
-  
-  // Estados para la gestión de rutinas del cliente
   const [clienteSeleccionado, setClienteSeleccionado] = useState('');
-  const [mesociclos, setMesociclos] = useState([]); // Array de semanas
-  const [rutinaEditandoId, setRutinaEditandoId] = useState(null); // null = nueva rutina, número = editando existente
-
-  // Estados del lienzo de trabajo
+  const [mesociclos, setMesociclos] = useState([]); 
+  const [rutinaEditandoId, setRutinaEditandoId] = useState(null); 
   const [rutina, setRutina] = useState({ nombre: '', diaSemana: 'Lunes', descripcion: '', mesocicloId: '' });
   const [ejerciciosSeleccionados, setEjerciciosSeleccionados] = useState([]);
   const [guardando, setGuardando] = useState(false);
-
-  // Estados para el catálogo de ejercicios
   const [modalEjercicioAbierto, setModalEjercicioAbierto] = useState(false);
   const [modoEdicionCatalogo, setModoEdicionCatalogo] = useState(false);
   const [ejercicioEditandoId, setEjercicioEditandoId] = useState(null);
   const [nuevoEjercicio, setNuevoEjercicio] = useState({ nombre: '', descripcion: '', videoUrl: '' });
   const [guardandoEjercicio, setGuardandoEjercicio] = useState(false);
-
   const [busquedaCatalogo, setBusquedaCatalogo] = useState('');
-
   useEffect(() => {
     fetch(`${API_URL}/api/clientes`)
       .then(res => res.json())
       .then(data => setClientes(data.filter(c => c.activo)));
-
     cargarCatalogo();
   }, []);
 
-  // Cargar las rutinas del cliente cuando cambia la selección
   useEffect(() => {
     if (clienteSeleccionado) {
       cargarRutinasDelCliente(clienteSeleccionado);
@@ -52,7 +42,6 @@ export default function CentroRutinas() {
   };
 
   const cargarRutinasDelCliente = (clienteId) => {
-    // Ahora llamamos a la ruta base de cliente, que en el backend nos devuelve los mesociclos
     fetch(`${API_URL}/api/rutinas/cliente/${clienteId}`)
       .then(res => res.json())
       .then(data => setMesociclos(data))
@@ -68,12 +57,10 @@ export default function CentroRutinas() {
   const handleCrearSemana = async () => {
     if (!clienteSeleccionado) return alert("Selecciona un cliente primero");
     
-    // Sugerimos un nombre basado en la cantidad actual
     const sugerencia = `Semana ${mesociclos.length + 1}`;
     const nombreSemana = prompt("Nombre de la nueva semana (Ej: Semana 1, Semana Descarga):", sugerencia);
     
-    if (!nombreSemana) return; // El usuario canceló
-
+    if (!nombreSemana) return; 
     try {
       const res = await fetch(`${API_URL}/api/rutinas/mesociclo`, {
         method: 'POST',
@@ -89,7 +76,7 @@ export default function CentroRutinas() {
       });
       
       if (res.ok) {
-        cargarRutinasDelCliente(clienteSeleccionado); // Recargamos para ver la nueva semana
+        cargarRutinasDelCliente(clienteSeleccionado); 
       } else {
         alert("Error al crear la semana");
       }
@@ -99,16 +86,15 @@ export default function CentroRutinas() {
     }
   };
 
-  // --- MANEJO DE RUTINAS EXISTENTES (CARGAR / BORRAR) ---
   const handleCargarRutinaAEditar = (plan, idMesocicloPerteneciente) => {
     setRutinaEditandoId(plan.id);
     setRutina({
       nombre: plan.nombre,
       diaSemana: plan.diaSemana,
       descripcion: plan.descripcion || '',
-      mesocicloId: idMesocicloPerteneciente // Asignamos la semana a la que pertenece
+      mesocicloId: idMesocicloPerteneciente 
     });
-    // Mapeamos los ejercicios para el lienzo
+    
     setEjerciciosSeleccionados(plan.ejercicios.map(ej => ({
       ejercicioId: ej.ejercicioId,
       nombre: ej.ejercicio.nombre,
@@ -137,7 +123,6 @@ export default function CentroRutinas() {
     }
   };
 
-  // --- LIENZO DE TRABAJO ---
   const agregarAlLienzo = (ejercicio) => {
     if (ejerciciosSeleccionados.some(ej => ej.ejercicioId === ejercicio.id)) {
       alert('Este ejercicio ya está en la lista actual');
@@ -183,21 +168,20 @@ export default function CentroRutinas() {
     
     const metodo = rutinaEditandoId ? 'PUT' : 'POST';
 
-    // 👇 FRONTEND CORREGIDO: Quitamos la desestructuración (...rutina) y el clienteId 
-    // para enviar estrictamente lo que la BD ahora nos pide.
     const payload = {
       nombre: rutina.nombre,
       diaSemana: rutina.diaSemana,
       descripcion: rutina.descripcion,
-      mesocicloId: Number(rutina.mesocicloId), 
+      mesocicloId: Number(rutina.mesocicloId),
+      clienteId: Number(clienteSeleccionado),
       listaEjercicios: ejerciciosSeleccionados.map((ej, idx) => ({
         ejercicioId: ej.ejercicioId,
         orden: idx + 1,
-        series: ej.series,
-        repeticiones: ej.repeticiones,
-        peso: ej.peso,
-        descansoSeg: ej.descansoSeg,
-        observaciones: ej.observaciones
+        series: Number(ej.series),
+        repeticiones: Number(ej.repeticiones),
+        peso: Number(ej.peso),
+        descansoSeg: Number(ej.descansoSeg),
+        observaciones: ej.observaciones || ''
       }))
     };
 
@@ -225,7 +209,6 @@ export default function CentroRutinas() {
     }
   };
 
-  // --- MODAL CATÁLOGO ---
   const abrirModalCrearCatalogo = () => {
     setModoEdicionCatalogo(false);
     setNuevoEjercicio({ nombre: '', descripcion: '', videoUrl: '' });
