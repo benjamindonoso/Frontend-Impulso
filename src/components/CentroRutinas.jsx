@@ -7,8 +7,8 @@ export default function CentroRutinas() {
   const [clientes, setClientes] = useState([]);
   const [catalogo, setCatalogo] = useState([]);
   const [clienteSeleccionado, setClienteSeleccionado] = useState('');
-  const [mesociclos, setMesociclos] = useState([]); // Array de semanas
-  const [rutinaEditandoId, setRutinaEditandoId] = useState(null); // null = nueva rutina, número = editando existente
+  const [mesociclos, setMesociclos] = useState([]); 
+  const [rutinaEditandoId, setRutinaEditandoId] = useState(null); 
   const [rutina, setRutina] = useState({ nombre: '', diaSemana: 'Lunes', descripcion: '', mesocicloId: '' });
   const [ejerciciosSeleccionados, setEjerciciosSeleccionados] = useState([]);
   const [guardando, setGuardando] = useState(false);
@@ -62,7 +62,7 @@ export default function CentroRutinas() {
     const sugerencia = `Semana ${mesociclos.length + 1}`;
     const nombreSemana = prompt("Nombre de la nueva semana (Ej: Semana 1, Semana Descarga):", sugerencia);
     
-    if (!nombreSemana) return; 
+    if (!nombreSemana) return;
 
     try {
       const res = await fetch(`${API_URL}/api/rutinas/mesociclo`, {
@@ -79,7 +79,7 @@ export default function CentroRutinas() {
       });
       
       if (res.ok) {
-        cargarRutinasDelCliente(clienteSeleccionado); 
+        cargarRutinasDelCliente(clienteSeleccionado);
       } else {
         alert("Error al crear la semana");
       }
@@ -95,7 +95,7 @@ export default function CentroRutinas() {
       nombre: plan.nombre,
       diaSemana: plan.diaSemana,
       descripcion: plan.descripcion || '',
-      mesocicloId: idMesocicloPerteneciente 
+      mesocicloId: idMesocicloPerteneciente
     });
     setEjerciciosSeleccionados(plan.ejercicios.map(ej => ({
       ejercicioId: ej.ejercicioId,
@@ -123,6 +123,16 @@ export default function CentroRutinas() {
     } catch (error) {
       alert("Error al conectar con el servidor");
     }
+  };
+
+  const moverEjercicio = (index, direccion) => {
+    const nuevos = [...ejerciciosSeleccionados];
+    const destino = index + direccion;
+
+    if (destino < 0 || destino >= nuevos.length) return;
+
+    [nuevos[index], nuevos[destino]] = [nuevos[destino], nuevos[index]];
+    setEjerciciosSeleccionados(nuevos);
   };
 
   const agregarAlLienzo = (ejercicio) => {
@@ -171,17 +181,19 @@ export default function CentroRutinas() {
     const metodo = rutinaEditandoId ? 'PUT' : 'POST';
 
     const payload = {
-      ...rutina,
+      nombre: rutina.nombre,
+      diaSemana: rutina.diaSemana,
+      descripcion: rutina.descripcion,
       mesocicloId: Number(rutina.mesocicloId),
-      clienteId: Number(clienteSeleccionado), // ¡RESTAURADO EL clienteId!
+      clienteId: Number(clienteSeleccionado), 
       listaEjercicios: ejerciciosSeleccionados.map((ej, idx) => ({
         ejercicioId: ej.ejercicioId,
         orden: idx + 1,
-        series: ej.series,
-        repeticiones: ej.repeticiones,
-        peso: ej.peso,
-        descansoSeg: ej.descansoSeg,
-        observaciones: ej.observaciones
+        series: Number(ej.series),
+        repeticiones: Number(ej.repeticiones),
+        peso: Number(ej.peso),
+        descansoSeg: Number(ej.descansoSeg),
+        observaciones: ej.observaciones || ''
       }))
     };
 
@@ -315,7 +327,6 @@ export default function CentroRutinas() {
           </div>
           <div className="p-3 overflow-y-auto flex-1 space-y-4">
             
-            {/* Renderizado de Mesociclos (Semanas) */}
             {mesociclos.map(meso => (
               <div key={meso.id} className="mb-2">
                 <h4 className="font-black text-slate-700 text-xs uppercase mb-2 border-b border-slate-200 pb-1">{meso.nombre}</h4>
@@ -386,9 +397,8 @@ export default function CentroRutinas() {
 
         {/* COLUMNA 3: LIENZO (CONSTRUCTOR) */}
         <section className="flex-1 bg-slate-50 p-8 overflow-y-auto h-[calc(100vh-80px)]">
-          <div className="max-w-2xl mx-auto space-y-6">
+          <div className="max-w-3xl mx-auto space-y-6">
             
-            {/* Aviso de Modo Edición */}
             {rutinaEditandoId && (
               <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 flex justify-between items-center text-sm text-blue-800 font-medium animate-fade-in">
                 <span>Modificando un plan guardado. Los cambios reescribirán la rutina anterior.</span>
@@ -402,7 +412,6 @@ export default function CentroRutinas() {
                 <input type="text" value={rutina.nombre} onChange={e => setRutina({...rutina, nombre: e.target.value})} placeholder="Ej: Tren Superior Fuerza" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-bold text-slate-800 outline-none focus:border-emerald-500 focus:bg-white transition-all"/>
               </div>
 
-              {/* SELECTOR DE SEMANA */}
               <div className="w-40">
                 <label className="block text-xs font-bold text-slate-400 uppercase mb-2">Semana</label>
                 <select value={rutina.mesocicloId} onChange={e => setRutina({...rutina, mesocicloId: Number(e.target.value)})} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-bold text-slate-800 outline-none focus:border-emerald-500 focus:bg-white transition-all">
@@ -421,34 +430,46 @@ export default function CentroRutinas() {
 
             <div className="space-y-3">
               {ejerciciosSeleccionados.map((ej, index) => (
-                <div key={index} className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center gap-6 group">
-                  <div className="w-8 h-8 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center font-bold text-sm shrink-0">{index + 1}</div>
-                  <div className="flex-1"><h4 className="font-black text-slate-800 text-base">{ej.nombre}</h4></div>
+                <div key={index} className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center gap-4 group transition-all">
+                  
+                  {/* 👇 FLECHAS DE REORDENAMIENTO 👇 */}
+                  <div className="flex flex-col gap-1 mr-2 items-center">
+                      <button type="button" onClick={() => moverEjercicio(index, -1)} disabled={index === 0} className="text-slate-400 hover:text-emerald-600 disabled:opacity-20 p-1 bg-slate-50 rounded hover:bg-emerald-50 transition-colors" title="Mover arriba">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 15l7-7 7 7" /></svg>
+                      </button>
+                      <button type="button" onClick={() => moverEjercicio(index, 1)} disabled={index === ejerciciosSeleccionados.length - 1} className="text-slate-400 hover:text-emerald-600 disabled:opacity-20 p-1 bg-slate-50 rounded hover:bg-emerald-50 transition-colors" title="Mover abajo">
+                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M19 9l-7 7-7-7" /></svg>
+                      </button>
+                  </div>
+
+                  <div className="w-8 h-8 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center font-bold text-sm shrink-0">{index + 1}</div>
+                  
+                  <div className="flex-1 w-48 truncate"><h4 className="font-black text-slate-800 text-base truncate pr-4" title={ej.nombre}>{ej.nombre}</h4></div>
     
-                  <div className="flex gap-3">
+                  <div className="flex gap-2">
                       <div className="text-center">
                         <span className="text-[10px] uppercase font-bold text-slate-400 block mb-1">Series</span>
-                        <input type="number" min="1" value={ej.series} onChange={e => actualizarEjercicioInline(index, 'series', e.target.value)} className="w-16 bg-slate-50 border border-slate-200 rounded-lg py-1.5 text-center font-bold text-slate-700 outline-none focus:border-emerald-500"/>
+                        <input type="number" min="1" value={ej.series} onChange={e => actualizarEjercicioInline(index, 'series', e.target.value)} className="w-14 bg-slate-50 border border-slate-200 rounded-lg py-1.5 text-center font-bold text-slate-700 outline-none focus:border-emerald-500"/>
                     </div>
                     <div className="text-center">
                         <span className="text-[10px] uppercase font-bold text-slate-400 block mb-1">Reps</span>
-                        <input type="number" min="1" value={ej.repeticiones} onChange={e => actualizarEjercicioInline(index, 'repeticiones', e.target.value)} className="w-16 bg-slate-50 border border-slate-200 rounded-lg py-1.5 text-center font-bold text-slate-700 outline-none focus:border-emerald-500"/>
+                        <input type="number" min="1" value={ej.repeticiones} onChange={e => actualizarEjercicioInline(index, 'repeticiones', e.target.value)} className="w-14 bg-slate-50 border border-slate-200 rounded-lg py-1.5 text-center font-bold text-slate-700 outline-none focus:border-emerald-500"/>
                     </div>
                     <div className="text-center">
-                        <span className="text-[10px] uppercase font-bold text-slate-400 block mb-1">Peso(kg)</span>
-                        <input type="number" min="0" value={ej.peso} onChange={e => actualizarEjercicioInline(index, 'peso', e.target.value)} className="w-16 bg-slate-50 border border-slate-200 rounded-lg py-1.5 text-center font-bold text-slate-700 outline-none focus:border-emerald-500"/>
+                        <span className="text-[10px] uppercase font-bold text-slate-400 block mb-1">Peso</span>
+                        <input type="number" min="0" value={ej.peso} onChange={e => actualizarEjercicioInline(index, 'peso', e.target.value)} className="w-14 bg-slate-50 border border-slate-200 rounded-lg py-1.5 text-center font-bold text-slate-700 outline-none focus:border-emerald-500" title="Kilos"/>
                     </div>
                     <div className="text-center">
-                        <span className="text-[10px] uppercase font-bold text-slate-400 block mb-1">Desc(s)</span>
-                        <input type="number" min="0" step="5" value={ej.descansoSeg} onChange={e => actualizarEjercicioInline(index, 'descansoSeg', e.target.value)} className="w-16 bg-amber-50 border border-amber-200 rounded-lg py-1.5 text-center font-bold text-amber-700 outline-none focus:border-amber-500"/>
+                        <span className="text-[10px] uppercase font-bold text-slate-400 block mb-1">Desc</span>
+                        <input type="number" min="0" step="5" value={ej.descansoSeg} onChange={e => actualizarEjercicioInline(index, 'descansoSeg', e.target.value)} className="w-14 bg-amber-50 border border-amber-200 rounded-lg py-1.5 text-center font-bold text-amber-700 outline-none focus:border-amber-500" title="Segundos"/>
                     </div>
-                    <div className="w-40 ml-2">
+                    <div className="w-32 ml-2">
                       <span className="text-[10px] uppercase font-bold text-slate-400 block mb-1">Obs.</span>
                       <input type="text" placeholder="Nota..." value={ej.observaciones || ''}  onChange={e => actualizarEjercicioInline(index, 'observaciones', e.target.value)}  className="w-full bg-slate-50 border border-slate-200 rounded-lg py-1.5 px-2 text-sm text-slate-700 outline-none focus:border-emerald-500"
                       />
                     </div>
                   </div>
-                  <button onClick={() => quitarDelLienzo(index)} className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all" title="Eliminar ejercicio">
+                  <button onClick={() => quitarDelLienzo(index)} className="p-2 ml-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all" title="Eliminar ejercicio">
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                   </button>
                 </div>
