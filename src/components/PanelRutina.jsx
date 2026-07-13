@@ -1,29 +1,27 @@
+react:Panel de Rutina Rápida:src/components/PanelRutina.jsx
 import { useState, useEffect } from "react";
 const API_URL = "https://backend-impulso-62td.onrender.com";
 
 export default function PanelRutina({ isOpen, onClose, cliente }) {
   const [catalogo, setCatalogo] = useState([]);
-  const [mesociclos, setMesociclos] = useState([]); // <-- NUEVO: Estado para las semanas
+  const [mesociclos, setMesociclos] = useState([]); 
   const [rutina, setRutina] = useState({
     nombre: "",
     diaSemana: "Lunes",
     descripcion: "",
     mesocicloId: "",
-  }); // <-- NUEVO: mesocicloId
+  }); 
   const [ejercicios, setEjercicios] = useState([]);
   const [guardando, setGuardando] = useState(false);
   const [mensaje, setMensaje] = useState(null);
 
-  // Cargar el catálogo y las semanas al abrir
   useEffect(() => {
     if (isOpen && cliente) {
-      // 1. Cargar catálogo
       fetch(`${API_URL}/api/ejercicios`)
         .then((res) => res.json())
         .then((data) => setCatalogo(data))
         .catch((err) => console.error("Error cargando catálogo:", err));
 
-      // 2. Cargar las semanas (mesociclos) del cliente
       fetch(`${API_URL}/api/rutinas/cliente/${cliente.id}`)
         .then((res) => res.json())
         .then((data) => setMesociclos(data))
@@ -82,7 +80,6 @@ export default function PanelRutina({ isOpen, onClose, cliente }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validaciones
     if (!rutina.mesocicloId) {
       setMensaje({
         tipo: "error",
@@ -102,17 +99,18 @@ export default function PanelRutina({ isOpen, onClose, cliente }) {
     const token = localStorage.getItem("token");
 
     const payload = {
-      ...rutina,
-      mesocicloId: Number(rutina.mesocicloId), // <-- NUEVO: Enviamos el ID de la semana
-      clienteId: cliente.id,
+      nombre: rutina.nombre,
+      diaSemana: rutina.diaSemana,
+      descripcion: rutina.descripcion,
+      mesocicloId: Number(rutina.mesocicloId),
       listaEjercicios: ejercicios.map((ej, index) => ({
         ejercicioId: ej.ejercicioId,
         orden: index + 1,
         series: ej.series,
         repeticiones: ej.repeticiones,
         peso: ej.peso,
-        descansoSeg: ej.descansoSeg,
-      })),
+        descansoSeg: ej.descansoSeg
+      }))
     };
 
     try {
@@ -130,7 +128,6 @@ export default function PanelRutina({ isOpen, onClose, cliente }) {
         setTimeout(() => onClose(), 1500);
       } else {
         setMensaje({ tipo: "error", texto: "Error al guardar la rutina." });
-        console.log("Error response:", await response.text());
       }
 
     } catch (error) {
@@ -148,7 +145,6 @@ export default function PanelRutina({ isOpen, onClose, cliente }) {
         className={`fixed inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity duration-300 z-40 ${isOpen ? "opacity-100" : "opacity-0 pointer-events-none"}`}
         onClick={onClose}
       />
-
       <div
         className={`fixed inset-y-0 right-0 z-50 w-full max-w-lg bg-white shadow-2xl transform transition-transform duration-300 ease-in-out ${isOpen ? "translate-x-0" : "translate-x-full"} flex flex-col`}
       >
@@ -187,7 +183,6 @@ export default function PanelRutina({ isOpen, onClose, cliente }) {
               {mensaje.texto}
             </div>
           )}
-
           <form id="form-rutina" onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="md:col-span-2">
@@ -205,8 +200,6 @@ export default function PanelRutina({ isOpen, onClose, cliente }) {
                   placeholder="Ej: Tren Superior"
                 />
               </div>
-
-              {/* NUEVO SELECTOR DE SEMANA */}
               <div>
                 <label className="block text-xs font-bold text-slate-500 uppercase mb-2">
                   Semana
@@ -232,7 +225,6 @@ export default function PanelRutina({ isOpen, onClose, cliente }) {
                   </p>
                 )}
               </div>
-
               <div>
                 <label className="block text-xs font-bold text-slate-500 uppercase mb-2">
                   Día
@@ -260,7 +252,6 @@ export default function PanelRutina({ isOpen, onClose, cliente }) {
                 </select>
               </div>
             </div>
-
             <div className="pt-4 border-t border-slate-100">
               <label className="block text-xs font-bold text-slate-500 uppercase mb-2">
                 Añadir Ejercicio
@@ -277,7 +268,6 @@ export default function PanelRutina({ isOpen, onClose, cliente }) {
                 ))}
               </select>
             </div>
-
             <div className="space-y-3">
               {ejercicios.map((ej, index) => (
                 <div
@@ -383,7 +373,6 @@ export default function PanelRutina({ isOpen, onClose, cliente }) {
             </div>
           </form>
         </div>
-
         <div className="p-6 border-t border-slate-100 bg-white">
           <button
             form="form-rutina"

@@ -183,10 +183,13 @@ export default function CentroRutinas() {
     
     const metodo = rutinaEditandoId ? 'PUT' : 'POST';
 
+    // 👇 FRONTEND CORREGIDO: Quitamos la desestructuración (...rutina) y el clienteId 
+    // para enviar estrictamente lo que la BD ahora nos pide.
     const payload = {
-      ...rutina,
-      mesocicloId: Number(rutina.mesocicloId), // Aseguramos que sea número
-      clienteId: clienteSeleccionado,
+      nombre: rutina.nombre,
+      diaSemana: rutina.diaSemana,
+      descripcion: rutina.descripcion,
+      mesocicloId: Number(rutina.mesocicloId), 
       listaEjercicios: ejerciciosSeleccionados.map((ej, idx) => ({
         ejercicioId: ej.ejercicioId,
         orden: idx + 1,
