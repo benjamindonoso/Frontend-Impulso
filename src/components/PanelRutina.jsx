@@ -1,4 +1,3 @@
-react:Panel de Rutina Rápida:src/components/PanelRutina.jsx
 import { useState, useEffect } from "react";
 const API_URL = "https://backend-impulso-62td.onrender.com";
 
