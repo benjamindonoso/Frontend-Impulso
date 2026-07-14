@@ -57,7 +57,7 @@ export default function SugerenciaInstalacion() {
           <div className="mt-3 p-2.5 bg-slate-50 rounded-xl text-[11px] text-slate-600 font-medium">
             {plataforma === 'ios' ? (
               <span className="flex items-center gap-1.5 flex-wrap">
-                Presiona el botón de compartir 
+                Presiona los 3 puntitos y luego selecciona el botón de compartir (aveces representado por un cuadrado con una flecha hacia arriba)
                 <span className="bg-white px-1.5 py-0.5 rounded shadow-sm border border-slate-100 font-bold inline-block text-xs">
                   <svg className="w-3.5 h-3.5 inline text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
