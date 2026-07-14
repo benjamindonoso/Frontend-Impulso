@@ -15,11 +15,6 @@ export default function App() {
         {/* RUTA PÚBLICA (El kiosco que se abre con el QR) */}
         <Route path="/" element={<PortalAlumno />} />
 
-        <Route path="/admin/gestion-clientes" element={<GestionClientes />} />
-        <Route path="/admin/gestion-familias" element={<GestionFamilias />} />
-        
-        <Route path="/admin/rutinas" element={<CentroRutinas />} />
-
         {/* RUTAS PRIVADAS (Para los administradores de Impulso) */}
         <Route path="/admin" element={<LoginAdmin />} />
 
