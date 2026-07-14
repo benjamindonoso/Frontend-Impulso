@@ -6,6 +6,7 @@ import GestionClientes from './components/GestionClientes';
 import CentroRutinas from './components/CentroRutinas';
 import Auditoria from './components/Auditoria';
 import GestionFamilias from './components/GestionFamilias';
+import SugerenciaInstalacion from './components/SugerenciaInstalacion';
 
 export default function App() {
   return (
@@ -21,13 +22,6 @@ export default function App() {
 
         {/* RUTAS PRIVADAS (Para los administradores de Impulso) */}
         <Route path="/admin" element={<LoginAdmin />} />
-
-        <Route path="/admin/rutinas" element={<CentroRutinas />} />
-
-        <Route path="/admin/auditoria" element={<Auditoria />} />
-        
-        {/* Tu panel de entrenador: */}
-        <Route path="/admin/dashboard" element={<Dashboard />} />
 
         {/* Si alguien escribe algo raro, lo devuelve al inicio */}
         <Route path="*" element={<Navigate to="/" replace />} />

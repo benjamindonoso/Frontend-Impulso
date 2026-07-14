@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import SugerenciaInstalacion from '../components/SugerenciaInstalacion';
 const API_URL = "https://backend-impulso-62td.onrender.com";
 
 export default function PortalAlumno() {
@@ -187,6 +188,7 @@ export default function PortalAlumno() {
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] font-sans flex flex-col relative">
+      <SugerenciaInstalacion />
       {/* MODAL DE INFORMACIÓN DEL EJERCICIO */}
       {ejercicioSeleccionadoInfo && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4 sm:p-0">
