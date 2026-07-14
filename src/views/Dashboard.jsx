@@ -9,9 +9,10 @@ import GestionClientes from '../components/GestionClientes';
 import CentroRutinas from '../components/CentroRutinas';
 import GestionFamilias from '../components/GestionFamilias';
 const API_URL = 'https://backend-impulso-62td.onrender.com';
+import logoImpulso from '../assets/logo-impulso.jpg';
 
 export default function Dashboard() {
-  const navigate = useNavigate(); // Movido dentro del componente
+  const navigate = useNavigate(); 
   const [clientes, setClientes] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [panelAbierto, setPanelAbierto] = useState(false);
@@ -19,7 +20,6 @@ export default function Dashboard() {
   const [clienteSeleccionado, setClienteSeleccionado] = useState(null);
   const [panelAdminAbierto, setPanelAdminAbierto] = useState(false);
 
-  // Protección de ruta: Si no hay token, al login
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) {
@@ -43,7 +43,6 @@ export default function Dashboard() {
   };
 
   const handleBorrarCliente = async (id) => {
-    // Confirmación para evitar borrados por accidente
     if (!window.confirm('¿Estás seguro de que deseas eliminar a este miembro? Esta acción no se puede deshacer.')) {
       return;
     }
@@ -52,12 +51,11 @@ export default function Dashboard() {
       const res = await fetch(`${API_URL}/api/clientes/${id}`, {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}` // Importante enviar el token
+          'Authorization': `Bearer ${localStorage.getItem('token')}` 
         }
       });
 
       if (res.ok) {
-        // Si se borró bien, recargamos la lista automáticamente
         obtenerClientes(); 
       } else {
         alert('Error al eliminar el cliente. Verifica los permisos.');
