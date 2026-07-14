@@ -18,6 +18,12 @@ export default function App() {
         {/* RUTAS PRIVADAS (Para los administradores de Impulso) */}
         <Route path="/admin" element={<LoginAdmin />} />
 
+        <Route path="/admin/dashboard" element={<Dashboard />} />
+        <Route path="/admin/gestion-clientes" element={<GestionClientes />} />
+        <Route path="/admin/centro-rutinas" element={<CentroRutinas />} />
+        <Route path="/admin/auditoria" element={<Auditoria />} />
+        <Route path="/admin/gestion-familias" element={<GestionFamilias />} />
+
         {/* Si alguien escribe algo raro, lo devuelve al inicio */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

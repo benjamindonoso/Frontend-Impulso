@@ -9,7 +9,6 @@ import GestionClientes from '../components/GestionClientes';
 import CentroRutinas from '../components/CentroRutinas';
 import GestionFamilias from '../components/GestionFamilias';
 const API_URL = 'https://backend-impulso-62td.onrender.com';
-import logoImpulso from '../assets/logo-impulso.jpg';
 
 export default function Dashboard() {
   const navigate = useNavigate(); 
