@@ -23,6 +23,7 @@ export default function App() {
         <Route path="/admin/centro-rutinas" element={<CentroRutinas />} />
         <Route path="/admin/auditoria" element={<Auditoria />} />
         <Route path="/admin/gestion-familias" element={<GestionFamilias />} />
+        <Route path="/admin/rutinas" element={<CentroRutinas />} />
 
         {/* Si alguien escribe algo raro, lo devuelve al inicio */}
         <Route path="*" element={<Navigate to="/" replace />} />
