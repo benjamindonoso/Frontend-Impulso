@@ -167,6 +167,57 @@ export default function CentroRutinas() {
     setEjerciciosSeleccionados(nuevos);
   };
 
+    const handleDuplicarRutina = async () => {
+    if (!clienteSeleccionado) return alert("Selecciona un cliente primero");
+    if (!rutina.mesocicloId) return alert("Debes seleccionar a qué Semana pertenece esta rutina.");
+    if (ejerciciosSeleccionados.length === 0) return alert("Agrega al menos un ejercicio");
+    
+    const nombreDuplicado = prompt("Nombre para la rutina duplicada:", `${rutina.nombre} (Copia)`);
+    if (!nombreDuplicado) return;
+
+    setGuardando(true);
+    
+    const payload = {
+      nombre: nombreDuplicado,
+      diaSemana: rutina.diaSemana,
+      descripcion: rutina.descripcion,
+      mesocicloId: Number(rutina.mesocicloId),
+      clienteId: Number(clienteSeleccionado), 
+      listaEjercicios: ejerciciosSeleccionados.map((ej, idx) => ({
+        ejercicioId: ej.ejercicioId,
+        orden: idx + 1,
+        series: Number(ej.series),
+        repeticiones: Number(ej.repeticiones),
+        peso: Number(ej.peso),
+        descansoSeg: Number(ej.descansoSeg),
+        observaciones: ej.observaciones || ''
+      }))
+    };
+
+    try {
+      const res = await fetch(`${API_URL}/api/rutinas`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (res.ok) {
+        alert("¡Rutina duplicada con éxito!");
+        limpiarLienzo(); 
+        cargarRutinasDelCliente(clienteSeleccionado);
+      } else {
+        alert("Error al duplicar en el servidor");
+      }
+    } catch (error) {
+      alert("Error de conexión");
+    } finally {
+      setGuardando(false);
+    }
+  };
+
   const guardarOActualizarRutina = async () => {
     if (!clienteSeleccionado) return alert("Selecciona un cliente primero");
     if (!rutina.mesocicloId) return alert("Debes seleccionar a qué Semana pertenece esta rutina.");
@@ -305,6 +356,15 @@ export default function CentroRutinas() {
             <option value="">Seleccionar Cliente...</option>
             {clientes.map(c => <option key={c.id} value={c.id}>{c.nombre} {c.apellidoP}</option>)}
           </select>
+          {rutinaEditandoId && (
+            <button 
+              onClick={handleDuplicarRutina} 
+              disabled={guardando} 
+              className="px-4 py-2 rounded-lg font-bold text-amber-800 bg-amber-100 hover:bg-amber-200 transition-all shadow-sm disabled:opacity-50"
+            >
+              📑 Duplicar
+            </button>
+          )}
           <button onClick={guardarOActualizarRutina} disabled={guardando} className={`px-6 py-2 rounded-lg font-bold text-white transition-all shadow-md disabled:opacity-50 ${rutinaEditandoId ? 'bg-blue-600 hover:bg-blue-700' : 'bg-slate-900 hover:bg-emerald-600'}`}>
             {guardando ? 'Guardando...' : (rutinaEditandoId ? '💾 Actualizar Rutina' : '💾 Crear Rutina')}
           </button>
