@@ -125,6 +125,26 @@ export default function CentroRutinas() {
     }
   };
 
+  const handleEliminarSemana = async (idSemana) => {
+    if (!confirm("¿Estás seguro de ELIMINAR esta semana completa? Se borrarán TODAS las rutinas dentro de ella.")) return;
+    try {
+      const res = await fetch(`${API_URL}/api/rutinas/mesociclo/${idSemana}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+      if (res.ok) {
+        alert("Semana eliminada correctamente");
+        cargarRutinasDelCliente(clienteSeleccionado);
+        // Limpiamos el lienzo por si estábamos editando una rutina de la semana borrada
+        limpiarLienzo();
+      } else {
+        alert("Error al eliminar la semana");
+      }
+    } catch (error) {
+      alert("Error al conectar con el servidor");
+    }
+  };
+
   const moverEjercicio = (index, direccion) => {
     const nuevos = [...ejerciciosSeleccionados];
     const destino = index + direccion;
@@ -389,7 +409,12 @@ export default function CentroRutinas() {
             
             {mesociclos.map(meso => (
               <div key={meso.id} className="mb-2">
-                <h4 className="font-black text-slate-700 text-xs uppercase mb-2 border-b border-slate-200 pb-1">{meso.nombre}</h4>
+                <div className="flex justify-between items-center border-b border-slate-200 pb-1 mb-2">
+                  <h4 className="font-black text-slate-700 text-xs uppercase">{meso.nombre}</h4>
+                  <button onClick={() => handleEliminarSemana(meso.id)} className="text-slate-300 hover:text-red-500 transition-colors p-1" title="Eliminar Semana Completa">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                  </button>
+                </div>
                 <div className="space-y-2">
                   {meso.rutinas && meso.rutinas.length > 0 ? (
                     meso.rutinas.map(plan => (
@@ -498,7 +523,7 @@ export default function CentroRutinas() {
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 15l7-7 7 7" /></svg>
                       </button>
                       <button type="button" onClick={() => moverEjercicio(index, 1)} disabled={index === ejerciciosSeleccionados.length - 1} className="text-slate-400 hover:text-emerald-600 disabled:opacity-20 p-1 bg-slate-50 rounded hover:bg-emerald-50 transition-colors" title="Mover abajo">
-                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M19 9l-7 7-7-7" /></svg>
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M19 9l-7 7-7-7" /></svg>
                       </button>
                   </div>
 
